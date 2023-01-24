@@ -1,0 +1,176 @@
+package com.UAs;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+import java.sql.DriverManager;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.sql.ResultSet;
+
+public class JavaCRUD {
+
+    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+    static final String DB_URL = "jdbc:mysql://localhost/peminjam";
+    static final String USER = "root";
+    static final String PASS = "";
+
+    static Connection conn;
+    static Statement stmt;
+    static ResultSet rs;
+    static InputStreamReader inputStreamReader = new InputStreamReader(System.in);
+    static BufferedReader input = new BufferedReader(inputStreamReader);
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+
+        try {
+            // register driver
+            Class.forName(JDBC_DRIVER);
+
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            stmt = conn.createStatement();
+
+            while (!conn.isClosed()) {
+                showMenu();
+            }
+
+            stmt.close();
+            conn.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    static void showMenu() {
+        System.out.println("\n========= MENU UTAMA =========");
+        System.out.println("1. Insert Buku");
+        System.out.println("2. Show Buku");
+        System.out.println("3. Edit Buku");
+        System.out.println("4. Delete Buku");
+        System.out.println("0. Keluar");
+        System.out.println("");
+        System.out.print("PILIHAN> ");
+
+        try {
+            int pilihan = Integer.parseInt(input.readLine());
+
+            switch (pilihan) {
+                case 0:
+                    System.exit(0);
+                    break;
+                case 1:
+                    insertBuku();
+                    break;
+                case 2:
+                    showData();
+                    break;
+                case 3:
+                    updateBuku();
+                    break;
+                case 4:
+                    deleteBuku();
+                    break;
+                default:
+                    System.out.println("Pilihan salah!");
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void showData() {
+        String sql = "SELECT * FROM Buku";
+
+        try {
+            rs = stmt.executeQuery(sql);
+            
+            System.out.println("+--------------------------------+");
+            System.out.println("|    DATA Rekap_Buku  |");
+            System.out.println("+--------------------------------+");
+
+            while (rs.next()) {
+                int KodeBuku = rs.getInt("Kode Buku");
+                String JudulBuku = rs.getString("Judul Buku");
+                String TotalBuku = rs.getString("Total Buku");
+
+                
+                System.out.println(String.format("%d. %s -- (%s)", KodeBuku , JudulBuku, TotalBuku));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    static void insertBuku() {
+        try {
+            // ambil input dari user
+            System.out.print("Judul Buku: ");
+            String JudulBuku = input.readLine().trim();
+            System.out.print("Total Buku: ");
+            String TotalBuku = input.readLine().trim();
+            System.out.print("Kode Buku:  ");
+            String KodeBuku = input.readLine().trim() ;
+ 
+            // query simpan
+            String sql = "INSERT INTO buku (judulBuku,TotalBuku,KodeBuku ) VALUE('%s','%s' , '%s')";
+            sql = String.format(sql, JudulBuku, TotalBuku, KodeBuku);
+
+            // simpan buku
+            stmt.execute(sql);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    static void updateBuku() {
+        try {
+            
+            // ambil input dari user
+            System.out.print("Kode yang mau diedit: ");
+            int KodeBuku = Integer.parseInt(input.readLine());
+            System.out.print("Judul Buku: ");
+            String JudulBuku = input.readLine().trim();
+            System.out.print("Total Buku: ");
+            String TotalBuku = input.readLine().trim();
+
+            // query update
+            String sql = "UPDATE buku SET JudulBuku='%s', TotalBuku='%s' WHERE KodeBuku=%d";
+            sql = String.format(sql, JudulBuku, TotalBuku, KodeBuku);
+
+            // update data buku
+            stmt.execute(sql);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void deleteBuku() {
+        try {
+            
+            // ambil input dari user
+            System.out.print("Kode yang mau dihapus: ");
+            int KodeBuku = Integer.parseInt(input.readLine());
+            
+            // buat query hapus
+            String sql = String.format("DELETE FROM buku WHERE KodeBuku=%d", KodeBuku);
+
+            // hapus data
+            stmt.execute(sql);
+            
+            System.out.println("Data telah terhapus...");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
